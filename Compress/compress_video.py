@@ -38,13 +38,15 @@ def get_ffmpeg() -> str:
 
 
 def has_encoder(ffmpeg: str, name: str) -> bool:
-    r = subprocess.run([ffmpeg, "-hide_banner", "-encoders"], capture_output=True, text=True)
-    return name in r.stdout
+    r = subprocess.run([ffmpeg, "-hide_banner", "-encoders"], capture_output=True, text=True,
+                       encoding="utf-8", errors="replace")
+    return name in (r.stdout or "")
 
 
 def probe_duration(ffmpeg: str, path: Path):
-    r = subprocess.run([ffmpeg, "-i", str(path)], capture_output=True, text=True)
-    m = re.search(r"Duration:\s*(\d+):(\d+):(\d+(?:\.\d+)?)", r.stderr)
+    r = subprocess.run([ffmpeg, "-i", str(path)], capture_output=True, text=True,
+                       encoding="utf-8", errors="replace")
+    m = re.search(r"Duration:\s*(\d+):(\d+):(\d+(?:\.\d+)?)", r.stderr or "")
     if not m:
         return None
     h, mi, s = m.groups()
@@ -76,8 +78,9 @@ def run(ffmpeg: str, args: list, total: float, label: str, cwd=None) -> None:
     # insert progress flags just before the output path (last arg)
     cmd = cmd[:-1] + ["-progress", "pipe:1", "-nostats", cmd[-1]]
     started = time.time()
-    with tempfile.TemporaryFile(mode="w+") as err:
-        proc = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=err, text=True, cwd=cwd)
+    with tempfile.TemporaryFile(mode="w+", encoding="utf-8", errors="replace") as err:
+        proc = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=err, text=True,
+                                encoding="utf-8", errors="replace", cwd=cwd)
         for line in proc.stdout:
             key, _, val = line.strip().partition("=")
             if key in ("out_time_us", "out_time_ms"):
