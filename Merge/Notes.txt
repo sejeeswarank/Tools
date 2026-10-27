@@ -1,0 +1,1 @@
+run: python inputvideo inputaudio output.mp4 --shortest

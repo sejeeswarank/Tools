@@ -1,0 +1,8 @@
+__pycache__/
+*.py[cod]
+*$py.class
+*.part.mp4
+out/
+failed.txt
+pass.log*
+.venv/

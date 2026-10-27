@@ -1,0 +1,1 @@
+run inside the video folder: python batch.py
